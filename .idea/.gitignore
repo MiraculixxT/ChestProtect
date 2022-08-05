@@ -10,3 +10,4 @@
 /.idea/
 *.jar
 *.xml
+/gradle/wrapper/
