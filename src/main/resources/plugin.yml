@@ -1,0 +1,14 @@
+name: ChestProtect
+load: STARTUP
+version: 1.0.0
+main: de.miraculixx.chestprotect.Main
+api-version: 1.18
+authors: [ Miraculixx ]
+description: Protect your Chest from greedy hands or just showcase your wealthiness
+website: https://miraculixx.de/
+libraries:
+  - "net.axay:kspigot:1.19.0"
+  - "org.jetbrains.kotlin:kotlin-stdlib:1.6.10"
+  - "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0"
+  - "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.0"
+  - "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2"
