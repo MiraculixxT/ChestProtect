@@ -18,7 +18,7 @@ object ChestManager {
     private val chests: MutableMap<LiteLocation, ChestData>
 
     /**
-     * Add a chest to the data list
+     * Add a chest to the data list.
      * @param location Location of the chest
      * @param owner Owner of the chest
      */
@@ -35,33 +35,54 @@ object ChestManager {
     }
 
     /**
-     * Receive the chest object at the given location. Could be null if no saved chest is at this location
+     * Receive the chest object at the given location. Could be null if no saved chest is at this location. If block is a double chest, only one side will be returned
      * @param location Location of the block
      * @return Chest Object or null
      */
-    fun getChest(location: LiteLocation): ChestData? {
-        return chests[location]
+    fun getChest(location: LiteLocation?): ChestData? {
+        return getChestPart(location)
     }
 
     /**
-     * Check if the player has access to the block at the given location
+     * Check if the player has access to the block at the given location. If block is a double chest, both sides will be checked
      * @param player Player to check permissions for
      * @param location Location of the block
      * @return Permission state
      */
-    fun hasAccess(player: UUID, location: LiteLocation): Boolean {
-        val obj = chests[location] ?: return true
-        return !obj.protected || obj.owner == player || obj.trusted.contains(player)
+    fun hasAccess(player: UUID, location: LiteLocation?): Boolean {
+        val obj = getChestPart(location) ?: return true
+        return !obj.protected || (player == obj.owner) || obj.trusted.contains(player)
     }
 
     /**
-     * Check if the block at the given location is a protected chest
-     * @param location Location of the block
+     * Check if the block at the given location is a protected chest. If block is a double chest, both sides will be checked
+     * @param location Location of the Block
      * @return Protection state
      */
-    fun isProtected(location: LiteLocation): Boolean {
-        val obj = chests[location] ?: return false
-        return obj.protected
+    fun isProtected(location: LiteLocation?): Boolean {
+        return getChestPart(location)?.protected ?: false
+    }
+
+    /**
+     * Check if players with no permission to access the block at the given location can see the content
+     * @param location Location of the block
+     * @return Transparent State
+     */
+    fun isTransparent(location: LiteLocation): Boolean {
+        return getChestPart(location)?.visual ?: return false
+    }
+
+    /**
+     * Get the correct Chest Data from the given location. This handle Double Chests
+     * @param location Location of the source Block
+     * @return Representing ChestData or null
+     */
+    private fun getChestPart(location: LiteLocation?): ChestData? {
+        val block = location?.getBlock()
+        val inv = (block?.state as? Chest)?.inventory ?: return null
+        return if (inv is DoubleChestInventory) {
+            chests[inv.rightSide.location?.toLiteLocation()] ?: chests[inv.leftSide.location?.toLiteLocation()]
+        } else chests[location]
     }
 
     /**
@@ -76,16 +97,6 @@ object ChestManager {
             inventory.rightSide.location?.block?.hollow(player)
             inventory.leftSide.location?.block?.hollow(player)
         } else block.hollow(player)
-    }
-
-    /**
-     * Check if players with no permission to access the block at the given location can see the content
-     * @param location Location of the block
-     * @return Transparent State
-     */
-    fun isTransparent(location: LiteLocation): Boolean {
-        val obj = chests[location] ?: return false
-        return obj.visual
     }
 
     fun save() {

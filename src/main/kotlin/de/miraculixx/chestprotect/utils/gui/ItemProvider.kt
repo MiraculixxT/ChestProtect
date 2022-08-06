@@ -10,6 +10,7 @@ import net.axay.kspigot.items.customModel
 import net.axay.kspigot.items.itemStack
 import net.axay.kspigot.items.meta
 import net.axay.kspigot.items.name
+import net.kyori.adventure.text.format.TextColor
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
@@ -119,6 +120,14 @@ class ItemProvider(private val chestData: ChestData) {
                     itemMeta as SkullMeta,
                     "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ4YTk5ZGIyYzM3ZWM3MWQ3MTk5Y2Q1MjYzOTk4MWE3NTEzY2U5Y2NhOTYyNmEzOTM2Zjk2NWIxMzExOTMifX19"
                 )
+            }
+
+            InvItem.INDICATOR -> itemStack(Material.BLACK_STAINED_GLASS_PANE) {
+                meta {
+                    val loc = chestData.location
+                    name = cmp("${loc.x}:${loc.y}:${loc.z}:${loc.world}", TextColor.color(0x0d0d0d))
+                    customModel = 0
+                }
             }
         }
     }

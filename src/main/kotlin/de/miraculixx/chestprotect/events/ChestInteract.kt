@@ -5,9 +5,9 @@ import de.miraculixx.chestprotect.utils.ChestManager.getChest
 import de.miraculixx.chestprotect.utils.ChestManager.hasAccess
 import de.miraculixx.chestprotect.utils.ChestManager.isTransparent
 import de.miraculixx.chestprotect.utils.ChestManager.noAccess
-import de.miraculixx.chestprotect.utils.gui.SettingsInv
+import de.miraculixx.chestprotect.utils.gui.GUIBuilder
+import de.miraculixx.chestprotect.utils.gui.enums.InvState
 import net.axay.kspigot.event.listen
-import net.axay.kspigot.extensions.broadcast
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Material
@@ -27,6 +27,10 @@ object ChestInteract {
         val block = it.clickedBlock ?: return@listen
         val type = block.type
         if (type != Material.CHEST && type != Material.TRAPPED_CHEST) return@listen
+        if (it.hand == EquipmentSlot.OFF_HAND) {
+            it.isCancelled = true
+            return@listen
+        }
         val player = it.player
         val gamemode = player.gameMode
 
@@ -37,11 +41,8 @@ object ChestInteract {
 
         // Shift click to get information about the chest
         val loc = block.location.toLiteLocation()
-        broadcast("Chest click")
-        if (player.isSneaking && it.hand == EquipmentSlot.HAND) {
-            broadcast("show info")
-            val chest = getChest(loc) ?: return@listen
-            broadcast("show info /found")
+        val chest = getChest(loc) ?: return@listen
+        if (player.isSneaking && it.action.isRightClick) {
             player.sendMessage(
                 mm.deserialize(
                     "<blue><st>         </st>[ <color:#8987ff>Protected Chest</color> ]<st>         </st>\n" +
@@ -50,12 +51,13 @@ object ChestInteract {
                             "· Transparent <color:#858585>≫</color> <color:#8987ff>${chest.visual}</color>\n" +
                             "· Trusted <color:#858585>≫</color> <color:#8987ff>${
                                 buildString {
-                                    chest.trusted.forEach { uuid ->
+                                    if (chest.trusted.isEmpty()) append("None")
+                                    else chest.trusted.forEach { uuid ->
                                         append(uuid.playerName() + ", ")
                                     }
                                 }.removeSuffix(", ")
-                            }</color>\n" +
-                            "<blue><st>                                           </st>"
+                            }\n<blue>" +
+                            "<st>                                           </st>"
                 )
             )
             it.isCancelled = true
@@ -64,14 +66,15 @@ object ChestInteract {
 
         // Player is clicking inside the chest
         val uuid = player.uniqueId
-        if (!hasAccess(uuid, loc)) {
-            broadcast("forbidden access")
+        val access = hasAccess(uuid, loc)
+        if (!access && it.action.isRightClick) { //No access and interact click
             it.isCancelled = true
             noAccess(player, block)
             if (isTransparent(loc)) openChestClone(player, block.state as? Chest)
-        } else if (it.action == Action.RIGHT_CLICK_BLOCK) {
-            broadcast("open settings")
-            SettingsInv(player, getChest(loc) ?: return@listen)
+            return@listen
+        }
+        if (chest.owner == uuid && player.isSneaking && it.action == Action.LEFT_CLICK_BLOCK) { //Access, punch click and sneaking
+            GUIBuilder(chest, InvState.MENU).openInventory(player)
         }
     }
 

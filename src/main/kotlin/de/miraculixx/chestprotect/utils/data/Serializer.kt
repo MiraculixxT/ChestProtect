@@ -1,6 +1,8 @@
 package de.miraculixx.chestprotect.utils.data
 
 import kotlinx.serialization.Serializable
+import org.bukkit.Bukkit
+import org.bukkit.block.Block
 import java.util.*
 
 @Serializable
@@ -13,4 +15,12 @@ data class ChestData(
 )
 
 @Serializable
-data class LiteLocation(val x: Int, val y: Int, val z: Int, val world: String)
+data class LiteLocation(val x: Int, val y: Int, val z: Int, val world: String) {
+    override fun toString(): String {
+        return "$x $y $z"
+    }
+
+    fun getBlock(): Block? {
+        return Bukkit.getWorld(world)?.getBlockAt(x, y, z)
+    }
+}

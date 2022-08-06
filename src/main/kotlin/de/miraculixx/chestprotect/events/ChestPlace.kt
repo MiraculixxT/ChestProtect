@@ -5,14 +5,16 @@ package de.miraculixx.chestprotect.events
 import de.miraculixx.chestprotect.utils.ChestManager
 import de.miraculixx.chestprotect.utils.toLiteLocation
 import net.axay.kspigot.event.listen
-import net.axay.kspigot.extensions.broadcast
+import net.axay.kspigot.runnables.taskRunLater
+import org.bukkit.GameMode
 import org.bukkit.Material
+import org.bukkit.block.Chest
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.inventory.DoubleChestInventory
 
 object ChestPlace {
     private val onPlace = listen<BlockPlaceEvent> {
-        broadcast("place")
         val player = it.player
         val uuid = player.uniqueId
         val block = it.block
@@ -32,11 +34,16 @@ object ChestPlace {
                     ChestManager.noAccess(player, loc.block)
                     it.isCancelled = true
                 }
-                ChestManager.addChest(loc.toLiteLocation(), uuid)
+                taskRunLater(1, true) {
+                    val inventory = (it.block.state as? Chest)?.inventory
+                    if (inventory !is DoubleChestInventory)
+                        ChestManager.addChest(block.location.toLiteLocation(), uuid)
+                }
+
             }
 
             Material.HOPPER, Material.RAIL, Material.POWERED_RAIL, Material.ACTIVATOR_RAIL, Material.DETECTOR_RAIL -> {
-                if (!ChestManager.hasAccess(uuid, loc.add(.0, 1.0, .0).toLiteLocation())) {
+                if (!ChestManager.hasAccess(uuid, loc.add(.0, 1.0, .0).toLiteLocation()) && player.gameMode != GameMode.CREATIVE) {
                     ChestManager.noAccess(player, loc.block)
                     it.isCancelled = true
                 }
