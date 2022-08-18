@@ -14,7 +14,7 @@ Different to other Plugins, this one focus on only provide the necessary feature
 
 ## How To
 Simply place down a chest, and it will be marked at yours. Only you can access the settings to it.\
-Note - Trusted Players have no access to the chest settings!
+Note - Trusted Players have no access to the chest settings!\
 **Sneak-Right-Click** -> Information about the chest (global)\
 **Sneak-Left-Click** -> Enter the settings
 
